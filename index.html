@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🏐 排球分隊查詢</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
+      background: linear-gradient(180deg, #ffb347, #ffd56b);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      padding: 20px;
+    }
+
+    /* 排球動畫 */
+    .ball {
+      position: absolute;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fff, #ffb347);
+      opacity: 0.35;
+      animation: fly 5s infinite ease-in-out;
+    }
+
+    @keyframes fly {
+      0%   { transform: translate(0, 0); }
+      25%  { transform: translate(220px, 140px); }
+      50%  { transform: translate(60px, 360px); }
+      75%  { transform: translate(260px, 520px); }
+      100% { transform: translate(0, 0); }
+    }
+
+    .card {
+      background: white;
+      width: 100%;
+      max-width: 380px;
+      border-radius: 26px;
+      padding: 28px;
+      box-shadow: 0 25px 50px rgba(0,0,0,.25);
+      z-index: 2;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 22px;
+      font-size: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 14px;
+      border: 1px solid #ddd;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 14px;
+      border: none;
+      font-size: 16px;
+      font-weight: bold;
+      background: #ff8c00;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .result {
+      margin-top: 22px;
+      text-align: center;
+      font-size: 18px;
+      line-height: 1.8;
+      padding: 16px;
+      border-radius: 18px;
+      background: #fff7e6;
+    }
+
+    .team {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 999px;
+      color: white;
+      font-weight: bold;
+      margin: 4px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- 飛來飛去的排球 -->
+  <div class="ball"></div>
+
+  <div class="card">
+    <h1>🏐 2026交大材料OB賽</h1>
+
+    <input id="nameInput" placeholder="輸入你的名字" />
+    <button onclick="search()">查詢分隊</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+<script>
+  const round1 = {
+    丹丹: ["利真","顏汝瑩","莊曼君","杜雨浩","王哲鴻","林靖峰"],
+    麥當勞: ["林琬禎","李宛儒","簡瑞成","鄭祐昇","徐令皇","吳嘉晟"],
+    肯德基: ["劉千妤","林臻","郭宣妘","李振宏","李冠陞","羅宏洋"],
+    漢堡王: ["邱芷琳","王宣晴","張祐瑜","張瑞文","李玠旻","歐奕昇"],
+    樂檸: ["蔡心瑜","紀芷榕","林姸妤","莊智斌","黃偉倫","陳聖宇"],
+    SUBWAY: ["李翊綺","劉佳柔","陳奕涵","張育誠","陳佳蔚","黃彥融"]
+  };
+
+  const round2 = {
+    百香狗: ["林臻","蔡心瑜","郭宣妘","張佑安","吳嘉晟","歐奕昇","林耕禾","王士豪","謝帛頤"],
+    熱狗: ["劉佳柔","顏汝瑩","紀芷榕","王哲鴻","陳仕杰","李冠陞","江智聖","李玠旻","莊智斌"],
+    奇異狗: ["林琬禎","張祐瑜","林姸妤","周品聿","陳芃翔","張瑞文","徐維佑","李庭維","段紹平"],
+    蘋狗: ["利真","王宣晴","莊曼君","賴宗聖","江淳喻","羅宏洋","陳聖宇","陳佳蔚","黃彥融"],
+    大耳狗: ["劉千妤","陳奕涵","簡瑞成","徐令皇","歐曜菘","黃偉倫","胡維綸","杜雨浩","張育誠"],
+    水狗: ["邱芷琳","李翊綺","李宛儒","楊孟融","林靖峰","鄭祐昇","李振宏","吳易珉","郭明墉"]
+  };
+
+  const colors = {
+    丹丹:"#ff6b6b", 麥當勞:"#feca57", 肯德基:"#ff9f43",
+    漢堡王:"#ee5253", 樂檸:"#1dd1a1", SUBWAY:"#10ac84",
+    百香狗:"#ff7f50", 熱狗:"#ff4757", 奇異狗:"#2ed573",
+    蘋狗:"#ff6b81", 大耳狗:"#54a0ff", 水狗:"#48dbfb"
+  };
+
+  function findTeam(name, round) {
+    for (let team in round) {
+      if (round[team].includes(name)) return team;
+    }
+    return null;
+  }
+
+  function search() {
+    const name = document.getElementById("nameInput").value.trim();
+    const r1 = findTeam(name, round1);
+    const r2 = findTeam(name, round2);
+    const result = document.getElementById("result");
+
+    if (!r1 && !r2) {
+      result.innerHTML = "❌ 查無此人，名字可能打錯ㄌ";
+      return;
+    }
+
+    result.innerHTML = `
+      👤 <b>${name}</b><br><br>
+      🥇 第一輪：<span class="team" style="background:${colors[r1]}">${r1}</span><br><br>
+      🥈 第二輪：<span class="team" style="background:${colors[r2]}">${r2}</span>
+    `;
+  }
+</script>
+
+</body>
+</html>
